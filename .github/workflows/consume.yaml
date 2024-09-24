@@ -12,7 +12,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REPOSITORY: ${{ github.repository_owner }}
+  REPOSITORY: ${{ github.repository }}
 
 jobs:
   consume:
