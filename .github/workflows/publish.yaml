@@ -45,4 +45,4 @@ jobs:
         run: echo ${GITHUB_RUNNER_TOKEN} | helm registry login ${REGISTRY}/${REPOSITORY} --username "github-actions" --password-stdin
 
       - name: Push Package
-        run: helm push ${CHART_PATH}/${{ matrix.chart.path }}-${TAG#v}.tgz oci://${REGISTRY}/${REPOSITORY}:${TAG#v}
+        run: helm push ${CHART_PATH}/${{ matrix.chart.path }}-${TAG#v}.tgz oci://${REGISTRY}/${REPOSITORY}
