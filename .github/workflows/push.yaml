@@ -3,10 +3,6 @@ on:
   push:
     tags:
       - v*.*.*
-env:
-  CHART_PATH: ./dist
-  TAG: ${{ github.ref_name }}
-  OWNER: ${{ github.event.organization }}
 jobs:
   publish:
     runs-on:
@@ -14,6 +10,10 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      CHART_PATH: ./dist
+      TAG: '${{ github.ref_name }}'
+      OWNER: '${{ github.event.organization }}'
     strategy:
       fail-fast: false
       matrix:
