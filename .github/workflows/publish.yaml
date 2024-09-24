@@ -3,17 +3,18 @@ on:
   push:
     tags:
       - v*.*.*
+env:
+  CHART_PATH: ./dist
+  TAG: ${{ github.ref_name }}
+  REGISTRY: ghcr.io
+  REPOSITORY: ${{ github.repository }}
 jobs:
   publish:
     runs-on:
       - ubuntu-latest
-    # permissions:
-    #   contents: read
-    #   packages: write
-    env:
-      CHART_PATH: ./dist
-      TAG: ${{ github.ref_name }}
-      REGISTRY: ghcr.io
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -32,10 +33,16 @@ jobs:
       - name: List Distribution
         run: ls -latr ${CHART_PATH}
 
+      - name: Ensure Repository Lowercase
+        run: |
+          LOWERCASE_REPOSITORY=$(echo "${REPOSITORY}" | | tr '[:upper:]' '[:lower:]');
+          echo "Converted '${REPOSITORY}' to '${LOWERCASE_REPOSITORY}'...";
+          echo "REPOSITORY=${LOWERCASE_REPOSITORY}" >> ${GITHUB_ENV};
+
       - name: Login to Container Registry
         env:
           GITHUB_RUNNER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo ${GITHUB_RUNNER_TOKEN} | helm registry login ghcr.io/${{ github.repository }} --username "github-actions" --password-stdin
+        run: echo ${GITHUB_RUNNER_TOKEN} | helm registry login ${REGISTRY}/${REPOSITORY} --username "github-actions" --password-stdin
 
       - name: Push Package
-        run: helm push ${CHART_PATH}/${{ matrix.chart.path }}-${TAG#v}.tgz oci://ghcr.io/${{ github.repository_owner }}
+        run: helm push ${CHART_PATH}/${{ matrix.chart.path }}-${TAG#v}.tgz oci://${REGISTRY}/${REPOSITORY}:${TAG#v}
