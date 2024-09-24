@@ -1,0 +1,41 @@
+name: Publish
+on:
+  push:
+    tags:
+      - v*.*.*
+env:
+  CHART_PATH: ./dist
+  TAG: ${{ github.ref_name }}
+  OWNER: ${{ github.event.organization }}
+jobs:
+  publish:
+    runs-on:
+      - ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        chart:
+          - path: dummy-chart
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Package Chart
+        run: helm package ./charts/${{ matrix.chart.path }} -d ${CHART_PATH} --version "${TAG#v}"
+
+      - name: List Distribution
+        run: ls -latr ${CHART_PATH}
+
+      - name: Login to Container Registry
+        env:
+          GITHUB_RUNNER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo ${GITHUB_RUNNER_TOKEN} | helm registry login ghcr.io/${OWNER} --username "github-actions" --password-stdin
+
+      # - name: Push Package
+      #   run: helm push ${CHART_PATH}/${{ matrix.chart.path }}-${TAG#v}.tgz oci://ghcr.io/${OWNER}
