@@ -12,8 +12,8 @@ jobs:
       packages: write
     env:
       CHART_PATH: ./dist
-      TAG: '${{ github.ref_name }}'
-      OWNER: '${{ github.repository_owner }}'
+      TAG: ${{ github.ref_name }}
+      REGISTRY: ghcr.io
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +35,7 @@ jobs:
       - name: Login to Container Registry
         env:
           GITHUB_RUNNER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo ${GITHUB_RUNNER_TOKEN} | helm registry login ghcr.io/${OWNER} --username "${{ github.actor }}" --password-stdin
+        run: echo ${GITHUB_RUNNER_TOKEN} | helm registry login ${REGISTRY}/${{ github.repository_owner }} --username "github-actions" --password-stdin
 
-      # - name: Push Package
-      #   run: helm push ${CHART_PATH}/${{ matrix.chart.path }}-${TAG#v}.tgz oci://ghcr.io/${OWNER}
+      - name: Push Package
+        run: helm push ${CHART_PATH}/${{ matrix.chart.path }}-${TAG#v}.tgz oci://${REGISTRY}/${{ github.repository }}
