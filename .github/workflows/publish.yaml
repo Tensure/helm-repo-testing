@@ -35,7 +35,7 @@ jobs:
 
       - name: Ensure Repository Lowercase
         run: |
-          LOWERCASE_REPOSITORY=$(echo "${REPOSITORY}" | | tr '[:upper:]' '[:lower:]');
+          LOWERCASE_REPOSITORY=$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]');
           echo "Converted '${REPOSITORY}' to '${LOWERCASE_REPOSITORY}'...";
           echo "REPOSITORY=${LOWERCASE_REPOSITORY}" >> ${GITHUB_ENV};
 
