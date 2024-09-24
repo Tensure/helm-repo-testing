@@ -10,21 +10,29 @@ on:
         type: string
         required: true
 
+env:
+  REGISTRY: ghcr.io
+  REPOSITORY: ${{ github.repository_owner }}
+
 jobs:
   consume:
     name: Consume
     runs-on:
       - ubuntu-latest
-    env:
-      REGISTRY: ghcr.io
     steps:
       - name: Setup Helm
         uses: azure/setup-helm@v4
 
+      - name: Ensure Repository Lowercase
+        run: |
+          LOWERCASE_REPOSITORY=$(echo "${REPOSITORY}" | tr '[:upper:]' '[:lower:]');
+          echo "Converted '${REPOSITORY}' to '${LOWERCASE_REPOSITORY}'...";
+          echo "REPOSITORY=${LOWERCASE_REPOSITORY}" >> ${GITHUB_ENV};
+
       - name: Login to Container Registry
         env:
           GITHUB_RUNNER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo ${GITHUB_RUNNER_TOKEN} | helm registry login ${REGISTRY}/${{ github.repository_owner }} --username "github-actions" --password-stdin
+        run: echo ${GITHUB_RUNNER_TOKEN} | helm registry login ${REGISTRY}/${REPOSITORY} --username "github-actions" --password-stdin
 
       - name: Test Chart
-        run: helm template test-release oci://${{ github.repository }}/${{ inputs.chart }} --version ${{ inputs.version }}
+        run: helm template test-release oci://${REGISTRY}/${REPOSITORY}/${{ inputs.chart }} --version ${{ inputs.version }}
